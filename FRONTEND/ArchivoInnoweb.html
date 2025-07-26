@@ -1,0 +1,92 @@
+<html>
+    <head>
+        <title>Trabajadores Innoweb</title>
+        <style>
+            body {
+                background-color: #1b2644; /* Fondo azul Innoweb */
+                background-size: cover; /* Ajusta la imagen para cubrir toda la pantalla */
+                background-repeat: no-repeat; /* Evita que se repita */
+                background-position: center center; /* Centra la imagen */
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+                padding: 40px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            h1  {color: #ef6123; /* Titulo Innoweb */
+                margin-bottom: 30px; /* Espaciado inferior */
+            }
+            table {
+                width: 80%; /* Ocupa el 80% del ancho */
+                border-collapse: collapse; /* Elimina espacio entre bordes de celdas */
+                background-color: white; /* Fondo blanco para mejor contraste */
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil para efecto de tarjeta */
+                border-radius: 8px; /* Bordes redondeados */
+                overflow: hidden; /* Oculta esquinas redondeadas del contenido */
+            }
+
+            th,td{ padding: 15px; /* Espaciado interno */
+                text-align: center; /* Centra el texto */
+                border-bottom: 1px solid #e0e0e0; /* Línea divisoria clara */
+            }
+
+            thead { background-color: #ef6123; /* Lila */
+                color: white; /* Texto blanco para contraste */
+            }
+
+            tr:hover{background-color: #ebcabb; /* Cambia el color de fondo al pasar el mouse */
+            }
+
+            @media (max-width: 768px) {table {
+                    width: 100%; /* Hace la tabla más fluida en pantallas pequeñas */
+                }
+            }
+
+        </style>   
+
+    </head>
+    <body>
+        <h1>Usuarios Innoweb</h1>
+        <br>
+        <table>
+            <thead>
+               <th>Numero</th>
+               <th>Email</th>
+               <th>Nombre</th>
+               <th>Rol</th>
+               <th>ProyectosAsociados</th>
+            </thead>
+            <tbody id="cuerpo-tabla"></tbody>
+                
+        </table>
+        <script>
+            async function cargarUsuarios() {
+                try{
+                   const respuesta = await fetch('http://127.0.0.1:5000/ListarDatosInnoweb');
+                   const datos = await respuesta.json();
+                   const cuerpoTabla = document.getElementById("cuerpo-tabla");
+                   cuerpoTabla.innerHTML = " ";
+                   let indice = 1;
+                   datos.forEach((item) => {
+                     const fila = document.createElement('tr');
+                     fila.innerHTML = `
+                          <td>${indice}</td>
+                          <td>${item.Email}</td>
+                          <td>${item.Nombre}</td>
+                          <td>${item.Rol}</td>
+                          <td>${item.ProyectosAsociados}</td>
+                    `;
+                    indice= indice+1;
+                    cuerpoTabla.appendChild(fila);
+                   });
+                }catch(error){
+                    console.log("El error fue: "+error)
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded',cargarUsuarios)
+        </script>
+
+    </body>
+ </html>

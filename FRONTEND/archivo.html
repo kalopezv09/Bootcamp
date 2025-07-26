@@ -1,0 +1,249 @@
+<html>
+    <head>
+        <title>listarPersonas</title>
+        <style>
+            body {
+                background-image: url('Imagenes/Fondo.jpg');
+
+                background-size: cover; /* Ajusta la imagen para cubrir toda la pantalla */
+                background-repeat: no-repeat; /* Evita que se repita */
+                background-position: center center; /* Centra la imagen */
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+                padding: 40px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            h1  {color: #8b0254; /* Azul oscuro elegante */
+                margin-bottom: 30px; /* Espaciado inferior */
+            }
+            table {
+                width: 80%; /* Ocupa el 80% del ancho */
+                border-collapse: collapse; /* Elimina espacio entre bordes de celdas */
+                background-color: white; /* Fondo blanco para mejor contraste */
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil para efecto de tarjeta */
+                border-radius: 8px; /* Bordes redondeados */
+                overflow: hidden; /* Oculta esquinas redondeadas del contenido */
+            }
+
+            th,td{ padding: 15px; /* Espaciado interno */
+                text-align: center; /* Centra el texto */
+                border-bottom: 1px solid #e0e0e0; /* Línea divisoria clara */
+            }
+
+            thead { background-color: #C8A2C8; /* Lila */
+                color: white; /* Texto blanco para contraste */
+            }
+
+            tr:hover{background-color: #f4c8e9; /* Cambia el color de fondo al pasar el mouse */
+            }
+
+            @media (max-width: 768px) {table {
+                    width: 100%; /* Hace la tabla más fluida en pantallas pequeñas */
+                }
+            }
+
+        </style>   
+
+    </head>
+    <body>
+        <h1>De BackEnd a FrontEnd</h1>
+        <br>
+        <table>
+            <thead>
+               <th>Numero</th>
+               <th>Edad</th>
+               <th>Nombre</th>
+               <th>Profesion</th>
+            </thead>
+            <tbody id="cuerpo-tabla">
+            </tbody>   
+        </table>
+
+        <br>
+        
+        <h1>Registro de personas desde la Base de Datos</h1>
+        <br>
+
+        <form id="personaFormulario">
+            <label>Identificacion:</label>
+            <input type="number" id="identificacion" required>
+            
+            <label>Nombre:</label>
+            <input type="text" id="nombre" required>
+            
+            <label>Edad:</label>
+            <input type="number" id="edad" required>
+            <button onclick="crearPersona()">Agregar Persona</button>
+            <button onclick="guardarCambios()">Actualizar Persona</button>
+        </form>
+
+        <table>
+            <thead>
+               <th>Indice</th>
+               <th>Identificacion</th>
+               <th>Nombre</th>
+               <th>Edad</th>
+               <th>Acciones</th>
+
+               
+            </thead>
+            <tbody id="datosPersonaBD">
+            </tbody>
+                
+        </table>
+   
+        <script>
+            async function cargarPersonas() {
+                try{
+                   const respuesta = await fetch('http://127.0.0.1:5000/listarPersonas');
+                   const datos = await respuesta.json();
+                   const cuerpoTabla = document.getElementById("cuerpo-tabla");
+                   cuerpoTabla.innerHTML = " ";
+                   let indice = 1;
+                   datos.forEach((item) => {
+                     const fila = document.createElement('tr');
+                     fila.innerHTML = `
+                          <td>${indice}</td>
+                          <td>${item.Edad}</td>
+                          <td>${item.Nombre}</td>
+                          <td>${item.Profesion}</td>
+                          
+                    `;
+                    indice= indice+1;
+                    cuerpoTabla.appendChild(fila);
+                   });
+                }catch(error){
+                    console.log("El error fue: "+error)
+                }
+            }
+
+            async function cargarPersonasDesdeBD() {
+                try{
+                   const respuesta = await fetch('http://127.0.0.1:5000/datosDeLaBase');
+                   const datos = await respuesta.json();
+                   const cuerpoTabla = document.getElementById("datosPersonaBD");
+                   cuerpoTabla.innerHTML = " ";
+                   let indice = 1;
+                   datos.forEach((item) => {
+                     const fila = document.createElement('tr');
+                     fila.innerHTML = `
+                          <td>${indice}</td>
+                          <td>${item.identificacion}</td>
+                          <td>${item.nombre}</td>
+                          <td>${item.edad}</td>
+                        <td><button onclick="actualizar(${item.identificacion})">Actualizar</button>
+                            <button onclick="eliminar(${item.identificacion})">Eliminar</button></td> 
+                    `;
+                    indice= indice+1;
+                    cuerpoTabla.appendChild(fila);
+                   });
+                }catch(error){
+                    console.log("El error fue: "+error)
+                }
+            }
+
+       
+        async function crearPersona() {
+
+            const persona = { persona:{
+                identificacion: document.getElementById('identificacion').value,
+                nombre: document.getElementById('nombre').value,
+                edad: document.getElementById('edad').value
+            }
+        
+            };
+
+            try {
+                const respuesta = await fetch('http://127.0.0.1:5000/AgregarPersonaBD',{
+                    method: 'POST', 
+                    headers: { 'content-Type': 'application/json'},
+                    body: JSON.stringify(persona)
+                });
+                
+                if (response.ok) {
+                    console.log("Se agrego correctamente");
+                }  else {
+                    alert ('Error al agregar persona');
+                }
+            } catch (error) {
+                console.error('Error al enviar datos:', error);
+            }
+        };
+
+
+            /*document.addEventListener('DOMContentLoaded',cargarPersonas);*/
+            document.addEventListener('DOMContentLoaded',cargarPersonasDesdeBD);
+
+            async function actualizar(identificacion) {
+                alert(identificacion);
+                try {
+                    const respuesta = await fetch('http://127.0.0.1:5000/buscarPersona/'+
+                    identificacion);    
+                    const datos = await respuesta.json();
+                    console.log(datos[0].nombre);
+                    document.getElementById("identificacion").value = datos[0].identificacion;
+                    document.getElementById("nombre").value = datos[0].nombre;
+                    document.getElementById("edad").value = datos[0].edad;
+
+
+                const persona = { persona: {
+                    identificacion: document.getElementById('identificacion').value,
+                    nombre: document.getElementById('nombre').value,
+                    edad: document.getElementById('edad').value
+            }}
+
+                }catch(error){
+                    console.log(error);
+                }
+            }
+
+            async function eliminar(identificacion) {
+                alert(identificacion);
+
+                try {
+                const respuesta = await fetch('http://127.0.0.1:5000/eliminarPersona/'+identificacion,{
+                    method: 'DELETE',
+                    
+                });
+                
+                if (response.ok) {
+                    console.log("Se elimino correctamente");
+                }   else {
+                    alert ('Error al eliminar persona');
+                }
+            } catch (error) {
+                console.error('Error al eliminar datos;', error);
+            }   
+            }
+
+            async function guardarCambios() {
+                const id = document.getElementById('identificacion').value;
+               const persona = {
+                    identificacion: document.getElementById('identificacion').value,
+                    nombre: document.getElementById('nombre').value,
+                    edad: document.getElementById('edad').value
+                }
+
+                try {
+                const response = await fetch('http://127.0.0.1:5000/actualizarPersona/'+id, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(persona)
+                });
+
+                if (response.ok) {
+                   console.log("Se actualizo correctamente");
+                } else {
+                    alert('Error al actualizar persona');
+                }
+            } catch (error) {
+                console.error('Error al enviar datos:', error);
+            }         
+            }
+                
+        </script>
+
+    </body>
+ </html>
